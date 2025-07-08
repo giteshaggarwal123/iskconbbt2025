@@ -193,9 +193,11 @@ export const SettingsModule: React.FC = () => {
                   <h3 className="text-lg font-semibold">
                     {profile?.first_name} {profile?.last_name}
                   </h3>
-                  <p className="text-gray-600">Member</p>
+                  <p className="text-gray-600">
+                    {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Admin' : 'Member'}
+                  </p>
                   <Badge variant="secondary" className="mt-1">
-                    Member
+                    {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Admin' : 'Member'}
                   </Badge>
                 </div>
               </div>
