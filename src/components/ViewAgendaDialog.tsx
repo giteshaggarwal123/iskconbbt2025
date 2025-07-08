@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -446,14 +446,14 @@ export const ViewAgendaDialog: React.FC<ViewAgendaDialogProps> = ({ open, onOpen
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative">
-        {/* Close (X) button */}
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-gray-200 focus:outline-none"
-          aria-label="Close"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <DialogClose asChild>
+          <button
+            className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-gray-200 focus:outline-none"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </DialogClose>
         <DialogHeader>
           <DialogTitle>{meeting.title}</DialogTitle>
           <DialogDescription>
