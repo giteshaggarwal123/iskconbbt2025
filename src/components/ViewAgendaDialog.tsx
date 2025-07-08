@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Users, MapPin, Video, Calendar, Paperclip, Upload, FileText, Download, Eye, Trash2, X } from 'lucide-react';
+import { Clock, Users, MapPin, Video, Calendar, Paperclip, Upload, FileText, Download, Eye, Trash2 } from 'lucide-react';
 import { format, isAfter } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -445,15 +445,7 @@ export const ViewAgendaDialog: React.FC<ViewAgendaDialogProps> = ({ open, onOpen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative">
-        <DialogClose asChild>
-          <button
-            className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-gray-200 focus:outline-none"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </DialogClose>
+      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{meeting.title}</DialogTitle>
           <DialogDescription>
