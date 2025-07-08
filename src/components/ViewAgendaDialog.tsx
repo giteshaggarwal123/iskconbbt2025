@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Users, MapPin, Video, Calendar, Paperclip, Upload, FileText, Download, Eye, Trash2 } from 'lucide-react';
+import { Clock, Users, MapPin, Video, Calendar, Paperclip, Upload, FileText, Download, Eye, Trash2, X } from 'lucide-react';
 import { format, isAfter } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -445,7 +445,15 @@ export const ViewAgendaDialog: React.FC<ViewAgendaDialogProps> = ({ open, onOpen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative">
+        {/* Close (X) button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-gray-200 focus:outline-none"
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
         <DialogHeader>
           <DialogTitle>{meeting.title}</DialogTitle>
           <DialogDescription>
