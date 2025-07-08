@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Folder, Plus, Trash2, FolderOpen, Lock } from 'lucide-react';
+import { Folder, Plus, Trash2, FolderOpen, Lock, Unlock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface Folder {
   id: string;
@@ -44,6 +45,7 @@ export const FolderManager: React.FC<FolderManagerProps> = ({
   const [parentFolderId, setParentFolderId] = useState<string | undefined>(currentFolderId || undefined);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
+  const { isSuperAdmin } = useUserRole();
 
   const handleCreateFolder = async () => {
     if (!folderName.trim()) {
@@ -107,6 +109,18 @@ export const FolderManager: React.FC<FolderManagerProps> = ({
                 {folder.name}
                 {folder.is_locked && <span className="text-xs ml-2 text-red-600">(LOCKED)</span>}
               </span>
+              {/* Lock/Unlock button for super admins */}
+              {isSuperAdmin && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 ml-2"
+                  title={folder.is_locked ? 'Unlock Folder' : 'Lock Folder'}
+                  onClick={() => handleToggleLock(folder)}
+                >
+                  {folder.is_locked ? <Unlock className="h-4 w-4 text-green-600" /> : <Lock className="h-4 w-4 text-gray-500" />}
+                </Button>
+              )}
             </div>
             {userCanAccessLocked && (
               <AlertDialog>
@@ -140,6 +154,29 @@ export const FolderManager: React.FC<FolderManagerProps> = ({
         </div>
       );
     }).filter(Boolean);
+  };
+
+  // Add lock/unlock logic
+  const handleToggleLock = async (folder: Folder) => {
+    try {
+      // Update the folder's is_locked status in the backend (Supabase example)
+      const { error } = await window.supabase
+        .from('folders')
+        .update({ is_locked: !folder.is_locked })
+        .eq('id', folder.id);
+      if (error) throw error;
+      toast({
+        title: folder.is_locked ? 'Folder Unlocked' : 'Folder Locked',
+        description: `"${folder.name}" has been ${folder.is_locked ? 'unlocked' : 'locked'} successfully.`
+      });
+      // Optionally, refetch folders or update state here
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update folder lock status',
+        variant: 'destructive'
+      });
+    }
   };
 
   if (!showCreateButton && folders.length === 0) {
