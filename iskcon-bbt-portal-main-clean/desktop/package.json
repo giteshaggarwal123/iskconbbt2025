@@ -1,0 +1,13 @@
+{
+  "name": "iskcon-bureau-desktop",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "ISKCON Bureau Portal Desktop App",
+  "author": "ISKCON BBT",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {},
+  "dependencies": {}
+} 

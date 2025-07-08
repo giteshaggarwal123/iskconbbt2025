@@ -1,0 +1,43 @@
+/* Mobile-friendly horizontal scroll for settings tabs */
+@media (max-width: 600px) {
+  .settings-tabs-list,
+  .settings-tabs-list[role="tablist"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+  .settings-mobile-dropdown {
+    display: block !important;
+    margin-bottom: 1rem;
+  }
+}
+@media (min-width: 601px) {
+  .settings-mobile-dropdown {
+    display: none !important;
+  }
+}
+
+.settings-tabs-list {
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  gap: 0.5rem !important;
+  grid-template-columns: unset !important;
+  display: flex !important;
+}
+.settings-tabs-list::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+.settings-tabs-list > * {
+  display: inline-block;
+  min-width: 120px;
+  text-align: center;
+  flex: 0 0 auto;
+} 
