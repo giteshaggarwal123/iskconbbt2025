@@ -307,7 +307,7 @@ export const DocumentsModule = () => {
     // Determine if any selected folder is locked
     const anyLocked = selectedFolderIds.some(id => {
       const folder = folders.find(f => f.id === id);
-      return folder && folder.locked;
+      return folder && folder.is_locked;
     });
     try {
       // Update all selected folders to locked/unlocked
@@ -333,6 +333,20 @@ export const DocumentsModule = () => {
     );
   }
   const noContent = filteredFolders.length === 0 && filteredDocuments.length === 0;
+
+  // Add after loading/empty state check
+  if (selectedFolder) {
+    const folderObj = folders.find(f => f.id === selectedFolder);
+    if (folderObj && folderObj.is_locked && !(userRole.isAdmin || userRole.isSuperAdmin)) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64">
+          <Lock className="h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-2xl font-bold text-red-700 mb-2">Locked Folder</h2>
+          <p className="text-lg text-muted-foreground">You do not have access to this folder.</p>
+        </div>
+      );
+    }
+  }
 
   // UI
   return (
@@ -569,7 +583,7 @@ export const DocumentsModule = () => {
                   {/* Show Unlock if any selected folder is locked, else Lock */}
                   {selectedFolderIds.some(id => {
                     const folder = folders.find(f => f.id === id);
-                    return folder && folder.locked;
+                    return folder && folder.is_locked;
                   }) ? (
                     <>
                       <Unlock className="h-4 w-4 mr-1" />
