@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { format } from 'date-fns';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useToast } from '@/hooks/use-toast';
 
 interface Folder {
   id: string;
@@ -41,6 +42,7 @@ export const FolderSection: React.FC<FolderSectionProps> = ({
 }) => {
   const { lockFolder, unlockFolder } = useDocuments();
   const userRole = useUserRole();
+  const { toast } = useToast();
 
   const getUserDisplayName = (userId: string) => {
     const profile = userProfiles[userId];
@@ -75,8 +77,14 @@ export const FolderSection: React.FC<FolderSectionProps> = ({
         <div
           key={`folder-${folder.id}`}
           style={{ marginLeft: `${level * 20}px` }}
-          className="bg-card border rounded-lg p-3 sm:p-4 hover:bg-muted/30 transition-colors cursor-pointer group mb-2"
-          onClick={() => onFolderClick(folder.id)}
+          className={`bg-card border rounded-lg p-3 sm:p-4 hover:bg-muted/30 transition-colors group mb-2 ${folder.is_locked && !(userRole.isAdmin || userRole.isSuperAdmin) ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+          onClick={() => {
+            if (folder.is_locked && !(userRole.isAdmin || userRole.isSuperAdmin)) {
+              toast({ title: 'Locked Folder', description: 'You do not have access to this folder.', variant: 'destructive' });
+              return;
+            }
+            onFolderClick(folder.id);
+          }}
         >
           <div className="flex items-start justify-between mb-2 sm:mb-3">
             <div className="flex items-center space-x-2 flex-1 min-w-0">

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Input, SearchInput } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { Plus, Grid, List, Home, ArrowLeft, ChevronLeft, Search, Trash2, Download, Star, StarOff, FolderOpen } from 'lucide-react';
+import { Plus, Grid, List, Home, ArrowLeft, ChevronLeft, Search, Trash2, Download, Star, StarOff, FolderOpen, Unlock, Lock } from 'lucide-react';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -301,6 +301,29 @@ export const DocumentsModule = () => {
     }
   };
 
+  // Handler for bulk lock/unlock
+  const handleBulkLockUnlock = async () => {
+    if (selectedFolderIds.length === 0) return;
+    // Determine if any selected folder is locked
+    const anyLocked = selectedFolderIds.some(id => {
+      const folder = folders.find(f => f.id === id);
+      return folder && folder.locked;
+    });
+    try {
+      // Update all selected folders to locked/unlocked
+      const { error } = await supabase
+        .from('folders')
+        .update({ is_locked: !anyLocked })
+        .in('id', selectedFolderIds);
+      if (error) throw error;
+      toast({ title: 'Success', description: anyLocked ? 'Folder(s) unlocked.' : 'Folder(s) locked.' });
+      // Refresh folder list
+      await refreshDocuments();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to update lock state.', variant: 'destructive' });
+    }
+  };
+
   // Add loading/empty state
   if (!folders || !documents) {
     return (
@@ -537,6 +560,29 @@ export const DocumentsModule = () => {
                 <Trash2 className="h-4 w-4 mr-1" />
                 Delete Selected Folders
               </Button>
+              {(userRole.isAdmin || userRole.isSuperAdmin) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkLockUnlock}
+                >
+                  {/* Show Unlock if any selected folder is locked, else Lock */}
+                  {selectedFolderIds.some(id => {
+                    const folder = folders.find(f => f.id === id);
+                    return folder && folder.locked;
+                  }) ? (
+                    <>
+                      <Unlock className="h-4 w-4 mr-1" />
+                      Unlock
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-4 w-4 mr-1" />
+                      Lock
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
           <FolderSection
