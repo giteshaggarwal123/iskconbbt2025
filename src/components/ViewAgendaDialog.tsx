@@ -445,7 +445,7 @@ export const ViewAgendaDialog: React.FC<ViewAgendaDialogProps> = ({ open, onOpen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative flex flex-col items-center justify-center">
+      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative">
         {/* Close (X) button */}
         <button
           onClick={() => onOpenChange(false)}
