@@ -445,7 +445,7 @@ export const ViewAgendaDialog: React.FC<ViewAgendaDialogProps> = ({ open, onOpen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative">
+      <DialogContent className="!top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 sm:max-w-[800px] max-h-[80vh] overflow-y-auto relative">
         <DialogClose asChild>
           <button
             className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-gray-200 focus:outline-none"
