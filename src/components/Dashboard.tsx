@@ -154,14 +154,14 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <div className="w-full max-w-4xl mx-auto px-2 py-6 space-y-6">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Welcome, {userName}</h1>
         <p className="text-sm text-muted-foreground">Here's a quick overview of your activity.</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Emails */}
-        <Card className="h-full min-h-[300px] flex flex-col justify-between">
+        <Card className="h-full min-h-[220px] flex flex-col justify-between">
           <CardHeader className="pb-2 flex flex-row items-center gap-2">
             <Mail className="h-5 w-5 text-red-600" />
             <CardTitle className="text-base">Recent Emails</CardTitle>
@@ -180,7 +180,7 @@ export const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         {/* Meetings */}
-        <Card className="h-full min-h-[300px] flex flex-col justify-between">
+        <Card className="h-full min-h-[220px] flex flex-col justify-between">
           <CardHeader className="pb-2 flex flex-row items-center gap-2">
             <CalendarDays className="h-5 w-5 text-blue-600" />
             <CardTitle className="text-base">Upcoming Meetings</CardTitle>
@@ -202,7 +202,7 @@ export const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         {/* Documents */}
-        <Card className="h-full min-h-[300px] flex flex-col justify-between">
+        <Card className="h-full min-h-[220px] flex flex-col justify-between">
           <CardHeader className="pb-2 flex flex-row items-center gap-2">
             <FileText className="h-5 w-5 text-green-600" />
             <CardTitle className="text-base">Recent Documents</CardTitle>
@@ -221,7 +221,7 @@ export const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         {/* Polls */}
-        <Card className="h-full min-h-[300px] flex flex-col justify-between">
+        <Card className="h-full min-h-[220px] flex flex-col justify-between">
           <CardHeader className="pb-2 flex flex-row items-center gap-2">
             <Vote className="h-5 w-5 text-purple-600" />
             <CardTitle className="text-base">Active Polls</CardTitle>
