@@ -296,6 +296,12 @@ export const useMeetings = () => {
 
       const manualAttendeesObjs = manualEmails.map(email => ({ email, rsvp: null }));
 
+      // Debug: log the meeting data being inserted
+      console.log('Inserting meeting:', {
+        meeting_id: meetingData.meeting_id,
+        ...meetingData
+      });
+
       const { data: meetingResult, error } = await supabase
         .from('meetings')
         .insert({
