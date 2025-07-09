@@ -128,15 +128,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const userName = `${member.first_name} ${member.last_name}`.trim() || member.email;
 
   // Add login capability indicator
-  const loginIndicator = member.canLogin ? (
-    <Badge className="bg-green-500 text-white flex items-center gap-1" title="Can log in">
-      <CheckCircle className="h-4 w-4 mr-1" /> Can Log In
-    </Badge>
-  ) : (
-    <Badge className="bg-red-500 text-white flex items-center gap-1" title="No login account">
-      <XCircle className="h-4 w-4 mr-1" /> No Login
-    </Badge>
-  );
+  // Remove or comment out the loginIndicator rendering in the member card UI
 
   // Get current user profile for ownership transfer
   const getCurrentUserProfile = (): Member => {
@@ -217,7 +209,9 @@ export const MemberCard: React.FC<MemberCardProps> = ({
           <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex items-center justify-between'}`}>
             <div className={`${isMobile ? 'flex flex-col space-y-3' : 'flex items-center space-x-4'}`}>
               <div className={`${isMobile ? 'flex items-center space-x-3' : 'flex items-center space-x-4'}`}>
-                {member.avatar_url ? (
+                {(member.email === 'brs@iskconbureau.in' || member.email === 'bvs@iskconbureau.in' || member.email === 'bps@iskconbureau.in') ? (
+                  <img src="/iskcon_logo%20(1).svg" alt="ISKCON Logo" className="h-10 w-10 rounded-full object-cover" />
+                ) : member.avatar_url ? (
                   <img src={member.avatar_url} alt={member.displayName || member.first_name || member.email || 'User'} className="h-10 w-10 rounded-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
@@ -230,7 +224,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-semibold">{userName}</span>
-                    {loginIndicator}
                   </div>
                   <div className={`${isMobile ? 'flex flex-col space-y-1' : 'flex items-center space-x-4'} ${isMobile ? 'text-xs' : 'text-sm'} text-gray-500 mt-1`}>
                     <span className="flex items-center space-x-1 min-w-0">
