@@ -192,6 +192,9 @@ export const Dashboard: React.FC = () => {
                   <span className="font-medium text-sm truncate flex items-center">
                     {getMeetingTypeIcon(meeting)}
                     {safe(meeting.title, 'Untitled')}
+                    {meeting.meeting_id && (
+                      <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono text-xs border border-blue-300">{meeting.meeting_id}</span>
+                    )}
                   </span>
                   {getJoinButton(meeting)}
                 </div>
