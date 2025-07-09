@@ -308,7 +308,9 @@ export const VotingModule: React.FC = () => {
                             <Badge className="bg-green-500 text-white text-xs">Active</Badge>
                           </CardTitle>
                           {poll.unique_id && (
-                            <div className="inline-block mt-1 mb-1 ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs text-gray-700 font-mono font-semibold border border-gray-300">Poll No: {poll.unique_id}</div>
+                            <Badge className="bg-blue-600 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                              <Vote className="h-4 w-4 mr-1" /> {poll.unique_id}
+                            </Badge>
                           )}
                           {poll.description && (
                             <CardDescription className="text-sm text-gray-600 mt-1">
@@ -403,7 +405,9 @@ export const VotingModule: React.FC = () => {
                               <span className="font-semibold">{safe(poll.title, 'Untitled')}</span>
                               <Badge variant="secondary" className="text-xs">Past Date</Badge>
                               {poll.unique_id && (
-                                <div className="inline-block mt-1 mb-1 ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs text-gray-700 font-mono font-semibold border border-gray-300">Poll No: {poll.unique_id}</div>
+                                <Badge className="bg-blue-600 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                  <Vote className="h-4 w-4 mr-1" /> {poll.unique_id}
+                                </Badge>
                               )}
                               {resultBadge}
                             </CardTitle>
@@ -485,7 +489,9 @@ export const VotingModule: React.FC = () => {
                               <span className="font-semibold">{safe(poll.title, 'Untitled')}</span>
                               <Badge variant="secondary" className="text-xs">Completed</Badge>
                               {poll.unique_id && (
-                                <div className="inline-block mt-1 mb-1 ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs text-gray-700 font-mono font-semibold border border-gray-300">Poll No: {poll.unique_id}</div>
+                                <Badge className="bg-blue-600 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                  <Vote className="h-4 w-4 mr-1" /> {poll.unique_id}
+                                </Badge>
                               )}
                               {resultBadge}
                             </CardTitle>
