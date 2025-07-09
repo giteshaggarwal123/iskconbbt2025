@@ -352,6 +352,9 @@ export const ScheduleMeetingDialog: React.FC<ScheduleMeetingDialogProps> = ({
         title: data.title,
         description: data.description,
         date: meetingDate,
+        time: data.time,
+        duration: data.duration,
+        type: data.type,
         location: data.type === 'online'
           ? 'Microsoft Teams Meeting'
           : data.type === 'hybrid'
@@ -360,7 +363,6 @@ export const ScheduleMeetingDialog: React.FC<ScheduleMeetingDialogProps> = ({
         attendees: selectedAttendees.join(', '),
         attachments: attachedFiles,
         rsvpEnabled,
-        type: data.type,
         agendas,
       };
 
@@ -451,19 +453,7 @@ export const ScheduleMeetingDialog: React.FC<ScheduleMeetingDialogProps> = ({
         return;
       }
 
-      const meeting = await createMeeting({
-        title: data.title,
-        description: data.description,
-        date: meetingDate,
-        time: data.time,
-        duration: data.duration,
-        type: data.type,
-        location: data.location,
-        attendees: selectedAttendees.join(', '),
-        attachments: attachedFiles,
-        rsvpEnabled,
-        agendas,
-      });
+      const meeting = await createMeeting(meetingData);
 
       if (meeting) {
         // Upload files after meeting is created
