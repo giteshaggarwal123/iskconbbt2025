@@ -13,6 +13,7 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 const members = [
+  { displayName: 'HH Bhakti Purushottam Swami', username: 'Bhakti Purushottam Swami', email: 'bps@iskconbureau.in', password: 'bps@2025' },
   { displayName: 'HH Bhakti Rasamrita Swami', username: 'Bhakti Rasamrita Swami', email: 'brs@iskconbureau.in', password: 'Zq!9@rLi8T$w' },
   { displayName: 'HH Bhaktivinode Swami', username: 'Bhaktivinode Swami', email: 'bvs@iskconbureau.in', password: 'Zq!9@rLi8T$w' },
   { displayName: 'HH Jayapataka Swami', username: 'Jayapataka Swami', email: 'jps@iskconbureau.in', password: 'Zq!9@rLi8T$w' },
