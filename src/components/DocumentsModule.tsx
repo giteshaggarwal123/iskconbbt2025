@@ -82,11 +82,31 @@ export const DocumentsModule = () => {
   // Unified search for folders and files
   const isSearching = !!searchTerm.trim();
   const folderIdForFilter = selectedFolder || '';
+  // Helper to get all descendant folders
+  function getDescendantFolders(folders: any[], parentId: string | null): any[] {
+    const descendants: any[] = [];
+    function findChildren(pid: string | null) {
+      folders.filter((f: any) => f.parent_folder_id === pid).forEach((f: any) => {
+        descendants.push(f);
+        findChildren(f.id);
+      });
+    }
+    findChildren(parentId);
+    return descendants;
+  }
   const filteredFolders = useMemo(() => {
     if (!folders) return [];
-    if (!isSearching) return folders.filter(f => (f.parent_folder_id ?? '') === folderIdForFilter);
-    return folders.filter(f => f.name && f.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [folders, folderIdForFilter, searchTerm, isSearching]);
+    if (isSearching) {
+      return folders.filter(f => f.name && f.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    if (!selectedFolder) {
+      return folders.filter(f => (f.parent_folder_id ?? '') === '');
+    }
+    // Show all descendants as a tree
+    const current = folders.find(f => f.id === selectedFolder);
+    if (!current) return [];
+    return getDescendantFolders(folders, selectedFolder);
+  }, [folders, selectedFolder, searchTerm, isSearching]);
 
   const filteredDocuments = useMemo(() => {
     if (!documents) return [];
