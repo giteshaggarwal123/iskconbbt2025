@@ -395,6 +395,9 @@ export const MeetingsModule: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <CardTitle className="text-lg flex flex-wrap items-center gap-2">
                     <span className="break-words leading-tight">{safe(meeting.title, 'Untitled')}</span>
+                    {meeting.meeting_id && (
+                      <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono text-xs border border-blue-300">{meeting.meeting_id}</span>
+                    )}
                     {isLive && <Badge className="bg-red-500 text-white animate-pulse shrink-0">LIVE</Badge>}
                     {meeting.meeting_type && (
                       <Badge className="bg-gray-200 text-gray-800 shrink-0 capitalize">{meeting.meeting_type}</Badge>
