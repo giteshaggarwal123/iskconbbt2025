@@ -628,6 +628,7 @@ export const DocumentsModule = () => {
             viewMode={viewMode}
             selectedIds={selectedFolderIds}
             onSelectionChange={setSelectedFolderIds}
+            parentId={selectedFolder || null}
           />
           <FileSection
             documents={filteredDocuments.map(d => ({...d, name: safe(d.name, 'Untitled'), id: safe(d.id, '')}))}

@@ -28,6 +28,7 @@ interface FolderSectionProps {
   viewMode?: 'card' | 'list';
   selectedIds?: string[];
   onSelectionChange?: (selectedIds: string[]) => void;
+  parentId?: string | null;
 }
 
 export const FolderSection: React.FC<FolderSectionProps> = ({
@@ -38,7 +39,8 @@ export const FolderSection: React.FC<FolderSectionProps> = ({
   canAccessLockedFolders = false,
   viewMode = 'card',
   selectedIds = [],
-  onSelectionChange
+  onSelectionChange,
+  parentId = null
 }) => {
   const { lockFolder, unlockFolder } = useDocuments();
   const userRole = useUserRole();
@@ -161,7 +163,7 @@ export const FolderSection: React.FC<FolderSectionProps> = ({
           Folders ({folders.length})
         </h3>
         <div className="space-y-1">
-          {folders.filter(f => f.parent_folder_id === null).map(folder => (
+          {folders.filter(f => f.parent_folder_id === parentId).map(folder => (
             <div
               key={`folder-list-${folder.id}`}
               className="bg-card border rounded-lg p-3 hover:bg-muted/30 transition-colors cursor-pointer group flex items-center justify-between"
@@ -215,7 +217,7 @@ export const FolderSection: React.FC<FolderSectionProps> = ({
         Folders ({folders.length})
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {folders.filter(f => f.parent_folder_id === null).map(folder => (
+        {folders.filter(f => f.parent_folder_id === parentId).map(folder => (
           <div
             key={`folder-card-${folder.id}`}
             className="bg-card border rounded-lg p-3 sm:p-4 hover:bg-muted/30 transition-colors cursor-pointer group mb-2 flex flex-col"
