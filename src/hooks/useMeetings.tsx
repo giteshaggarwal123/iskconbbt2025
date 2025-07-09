@@ -205,6 +205,7 @@ export const useMeetings = () => {
     attachments?: any[];
     rsvpEnabled?: boolean;
     agendas?: string[];
+    meeting_id: string; // meeting_id is required
   }) => {
     if (!user) {
       toast({
@@ -298,6 +299,7 @@ export const useMeetings = () => {
       const { data: meetingResult, error } = await supabase
         .from('meetings')
         .insert({
+          meeting_id: meetingData.meeting_id,
           title: meetingData.title,
           description: meetingData.description,
           start_time: startDateTime.toISOString(),
