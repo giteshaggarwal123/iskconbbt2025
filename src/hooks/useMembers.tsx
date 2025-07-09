@@ -17,6 +17,7 @@ interface Member {
   isPending?: boolean;
   displayName: string;
   avatar_url: string;
+  canLogin: boolean;
 }
 
 interface ActivityLog {
@@ -34,6 +35,23 @@ export const useMembers = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { createMember, isCreating } = useMemberCreation();
+  const [authUsers, setAuthUsers] = useState<string[]>([]); // store Auth emails
+
+  // Fetch Auth users
+  const fetchAuthUsers = useCallback(async () => {
+    try {
+      // Only fetch if admin
+      if (!user) return;
+      const { data, error } = await supabase.auth.admin.listUsers();
+      if (error) {
+        console.error('Error fetching Auth users:', error);
+        return;
+      }
+      setAuthUsers(data.users.map((u: any) => u.email));
+    } catch (err) {
+      console.error('Error fetching Auth users:', err);
+    }
+  }, [user]);
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
@@ -46,13 +64,8 @@ export const useMembers = () => {
 
       if (profilesError) {
         console.error('Profiles fetch error:', profilesError);
-        // Only show toast if main members list fails
-        toast({
-          title: "Error",
-          description: "Failed to load members",
-          variant: "destructive"
-        });
-        setMembers([]); // Clear members on error
+        toast({ title: "Error", description: "Failed to load members", variant: "destructive" });
+        setMembers([]);
         return;
       }
 
@@ -62,12 +75,7 @@ export const useMembers = () => {
         .select('user_id, role');
       if (rolesError) {
         console.error('Roles fetch error:', rolesError);
-        // Optionally show a warning toast, but not destructive
-        toast({
-          title: "Warning",
-          description: "Some member roles could not be loaded.",
-          variant: "default"
-        });
+        toast({ title: "Warning", description: "Some member roles could not be loaded.", variant: "default" });
       }
 
       // Fetch all pending invitations
@@ -77,18 +85,15 @@ export const useMembers = () => {
         .order('created_at', { ascending: false });
       if (invitationsError) {
         console.error('Invitations fetch error:', invitationsError);
-        // Optionally show a warning toast, but not destructive
-        toast({
-          title: "Warning",
-          description: "Some member invitations could not be loaded.",
-          variant: "default"
-        });
+        toast({ title: "Warning", description: "Some member invitations could not be loaded.", variant: "default" });
       }
+
+      // Fetch Auth users for login capability
+      await fetchAuthUsers();
 
       // Combine registered members
       const membersData: Member[] = profiles?.map(profile => {
         let memberRoles = userRoles?.filter(role => role.user_id === profile.id) || [];
-        // Special handling for super admin
         if (profile.email === 'atd@iskconbureau.in' || profile.email === 'bgd@iskconbureau.in') {
           const hasSuperAdminRole = memberRoles.some(role => role.role === 'super_admin');
           if (!hasSuperAdminRole) {
@@ -101,7 +106,8 @@ export const useMembers = () => {
             memberRoles = [{ user_id: profile.id, role: 'admin' }, ...memberRoles];
           }
         }
-        // Crisp: Always show name if present, fallback to email
+        // Add canLogin property
+        const canLogin = authUsers.includes(profile.email);
         return {
           id: profile.id,
           email: profile.email || '',
@@ -114,8 +120,8 @@ export const useMembers = () => {
           is_suspended: profile.is_suspended || false,
           isPending: false,
           avatar_url: profile.avatar_url || '',
-          // Add a displayName field for crisp UI
           displayName: (profile.first_name?.trim() || profile.last_name?.trim()) ? `${profile.first_name?.trim() || ''} ${profile.last_name?.trim() || ''}`.trim() : (profile.email || profile.id),
+          canLogin,
         };
       }) || [];
 
@@ -136,6 +142,7 @@ export const useMembers = () => {
           isPending: true,
           avatar_url: '',
           displayName: (invite.first_name?.trim() || invite.last_name?.trim()) ? `${invite.first_name?.trim() || ''} ${invite.last_name?.trim() || ''}`.trim() : (invite.email || invite.id),
+          canLogin: false, // Pending invites cannot login
         }));
 
       // Merge and sort by created_at descending
@@ -151,7 +158,7 @@ export const useMembers = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, fetchAuthUsers]);
 
   // Enhanced real-time subscriptions
   useEffect(() => {

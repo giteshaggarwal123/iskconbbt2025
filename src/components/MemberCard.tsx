@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Phone, Settings, MessageCircle, Trash2, Lock, UserX, RotateCcw, Activity, Edit3, Crown, MoreVertical } from 'lucide-react';
+import { User, Mail, Phone, Settings, MessageCircle, Trash2, Lock, UserX, RotateCcw, Activity, Edit3, Crown, MoreVertical, CheckCircle, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog,
@@ -43,6 +43,7 @@ interface Member {
   isPending?: boolean;
   avatar_url?: string;
   displayName?: string;
+  canLogin?: boolean; // Added canLogin to the interface
 }
 
 interface MemberCardProps {
@@ -125,6 +126,17 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const actualRole = getActualRole(member.email, member.roles);
   const joinDate = new Date(member.created_at).toLocaleDateString();
   const userName = `${member.first_name} ${member.last_name}`.trim() || member.email;
+
+  // Add login capability indicator
+  const loginIndicator = member.canLogin ? (
+    <Badge className="bg-green-500 text-white flex items-center gap-1" title="Can log in">
+      <CheckCircle className="h-4 w-4 mr-1" /> Can Log In
+    </Badge>
+  ) : (
+    <Badge className="bg-red-500 text-white flex items-center gap-1" title="No login account">
+      <XCircle className="h-4 w-4 mr-1" /> No Login
+    </Badge>
+  );
 
   // Get current user profile for ownership transfer
   const getCurrentUserProfile = (): Member => {
@@ -216,6 +228,10 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                   <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 truncate`}>
                     {member.first_name} {member.last_name}
                   </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-semibold">{userName}</span>
+                    {loginIndicator}
+                  </div>
                   <div className={`${isMobile ? 'flex flex-col space-y-1' : 'flex items-center space-x-4'} ${isMobile ? 'text-xs' : 'text-sm'} text-gray-500 mt-1`}>
                     <span className="flex items-center space-x-1 min-w-0">
                       <Mail className="h-4 w-4 flex-shrink-0" />
