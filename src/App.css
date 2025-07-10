@@ -45,3 +45,13 @@ body {
   background-color: #FFF8E1; /* soft badaami/yellowish off-white */
   /* Removed SVG dotted pattern */
 }
+
+.blink-highlight {
+  animation: blink-fade 1.5s ease-in-out 1;
+}
+@keyframes blink-fade {
+  0% { background-color: #fffbe6; }
+  30% { background-color: #ffe066; }
+  60% { background-color: #fffbe6; }
+  100% { background-color: transparent; }
+}

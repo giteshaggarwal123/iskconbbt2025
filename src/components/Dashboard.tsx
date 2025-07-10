@@ -243,11 +243,11 @@ export const Dashboard: React.FC = () => {
                 key={poll.id}
                 className="mb-2 p-2 rounded hover:bg-muted/50 flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-600"
                 tabIndex={0}
-                onClick={() => navigate(`/polls/vote/${poll.id}`)}
+                onClick={() => navigate('/voting', { state: { highlightPollId: poll.id } })}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    navigate(`/polls/vote/${poll.id}`);
+                    navigate('/voting', { state: { highlightPollId: poll.id } });
                   }
                 }}
               >
@@ -256,7 +256,7 @@ export const Dashboard: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={e => { e.stopPropagation(); navigate(`/polls/vote/${poll.id}`); }}
+                    onClick={e => { e.stopPropagation(); navigate('/voting', { state: { highlightPollId: poll.id } }); }}
                     className="h-6 w-6 p-0"
                   >
                     <ExternalLink className="h-3 w-3" />

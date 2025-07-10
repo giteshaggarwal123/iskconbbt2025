@@ -16,9 +16,12 @@ import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 
 export const VotingModule: React.FC = () => {
+  const location = useLocation();
+  const highlightPollId = location.state?.highlightPollId;
+  const [highlighted, setHighlighted] = useState<string | null>(null);
   const { pollId } = useParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showVotingDialog, setShowVotingDialog] = useState(false);
@@ -239,6 +242,18 @@ export const VotingModule: React.FC = () => {
     setPollingPaused(showCreateDialog);
   }, [showCreateDialog, setPollingPaused]);
 
+  React.useEffect(() => {
+    if (highlightPollId) {
+      setHighlighted(highlightPollId);
+      const el = document.getElementById(`poll-card-${highlightPollId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const timeout = setTimeout(() => setHighlighted(null), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlightPollId]);
+
   // Sort polls by unique_id ascending within each tab
   const sortByUniqueId = (a: any, b: any) => {
     if (!a.unique_id && !b.unique_id) return 0;
@@ -259,91 +274,7 @@ export const VotingModule: React.FC = () => {
   }
 
   const noPolls = polls.length === 0;
-  if (pollId && selectedPollById) {
-    // Render the full voting UI for the selected poll, reusing the Card and voting logic
-    return (
-      <div className="max-w-3xl mx-auto px-2 py-6">
-        <Card className="hover:shadow-md transition-shadow border-l-4 border-l-green-500 flex flex-row items-stretch">
-          <div className="flex-1">
-            <CardHeader className="pb-3 flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-lg flex items-center gap-2 mb-2">
-                  <span className="font-semibold">{safe(selectedPollById.title, 'Untitled')}</span>
-                  <Badge className="bg-green-500 text-white text-xs">{selectedPollById.status === 'active' ? 'Active' : 'Past'}</Badge>
-                </CardTitle>
-                {selectedPollById.unique_id && (
-                  <Badge className="bg-blue-600 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                    <Vote className="h-4 w-4 mr-1" /> {selectedPollById.unique_id}
-                  </Badge>
-                )}
-                {selectedPollById.description && (
-                  <CardDescription className="text-sm text-gray-600 mt-1">
-                    {safe(selectedPollById.description, '')}
-                  </CardDescription>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span>Deadline: {selectedPollById.deadline ? format(new Date(selectedPollById.deadline), 'MMM dd, yyyy') : 'No deadline'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span>{selectedPollById.stats?.voted_count || 0}/{selectedPollById.stats?.total_voters || 0} voted</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-gray-500" />
-                  <span>{selectedPollById.stats?.sub_poll_count || 0} questions</span>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2 border-t">
-                {!selectedPollById.hasVoted ? (
-                  <Button onClick={() => handleVoteNow(selectedPollById)} className="bg-green-600 hover:bg-green-700 text-white">
-                    <Vote className="h-4 w-4 mr-2" />Vote Now
-                  </Button>
-                ) : (
-                  <Button disabled className="bg-gray-300 text-gray-600 cursor-not-allowed">
-                    <Check className="h-4 w-4 mr-2" />Voted
-                  </Button>
-                )}
-                <Button variant="outline" onClick={() => handleViewResults(selectedPollById)}>
-                  <Eye className="h-4 w-4 mr-2" />View Results
-                </Button>
-                {userRole.canEditVoting && (
-                  <Button variant="outline" onClick={() => handleEditPoll(selectedPollById)}>
-                    <Edit className="h-4 w-4 mr-2" />Edit
-                  </Button>
-                )}
-                {userRole.canEditVoting && (
-                  <Button variant="outline" onClick={() => handleCompletePoll(selectedPollById.id, selectedPollById.stats?.voted_count, selectedPollById.stats?.total_voters)} className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
-                    <Check className="h-4 w-4 mr-2" />Complete
-                  </Button>
-                )}
-                {userRole.canDeleteContent && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleDeletePoll(selectedPollById.id, selectedPollById.status)} 
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-                    title="Delete poll"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </div>
-          <div className="flex flex-col justify-center items-center px-6 bg-gray-50 border-l border-gray-200 min-w-[120px]">
-            <div className="text-3xl font-bold text-green-700">{selectedPollById.stats?.voted_count || 0}</div>
-            <div className="text-lg text-gray-500">/ {selectedPollById.stats?.total_voters || 0}</div>
-            <div className="text-md text-blue-700 mt-2">{(selectedPollById.stats?.total_voters || 0) - (selectedPollById.stats?.voted_count || 0)} Pending</div>
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  // Always render the main voting module UI with tabs, using highlightPollId for animation.
   return (
     <div className="max-w-5xl mx-auto px-0 space-y-6">
       {/* Header Section */}
@@ -389,7 +320,7 @@ export const VotingModule: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {sortedActivePolls.map((poll) => (
-                  <Card key={poll.id} className="hover:shadow-md transition-shadow border-l-4 border-l-green-500 flex flex-row items-stretch">
+                  <Card key={poll.id} id={`poll-card-${poll.id}`} className={`hover:shadow-md transition-shadow border-l-4 border-l-green-500 flex flex-row items-stretch ${highlighted === poll.id ? 'blink-highlight' : ''}`}>
                     <div className="flex-1">
                       <CardHeader className="pb-3 flex items-start justify-between">
                         <div className="flex-1">
