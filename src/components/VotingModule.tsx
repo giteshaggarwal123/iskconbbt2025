@@ -22,7 +22,6 @@ export const VotingModule: React.FC = () => {
   const location = useLocation();
   const highlightPollId = location.state?.highlightPollId;
   const [highlighted, setHighlighted] = useState<string | null>(null);
-  const { pollId } = useParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showVotingDialog, setShowVotingDialog] = useState(false);
   const [showResultsDialog, setShowResultsDialog] = useState(false);
@@ -38,9 +37,6 @@ export const VotingModule: React.FC = () => {
   const userRole = useUserRole();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-
-  // If pollId is present, select the poll with that ID
-  const selectedPollById = pollId ? polls.find(p => p.id === pollId) : null;
 
   // 1. Add a 'Completed' tab for polls where all members have voted or status is 'completed'
   const completedPolls = polls.filter(poll => ((poll.stats && typeof poll.stats.voted_count === 'number' && typeof poll.stats.total_voters === 'number' && poll.stats.voted_count === poll.stats.total_voters && poll.stats.total_voters > 0) || poll.status === 'completed'));
