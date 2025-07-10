@@ -40,8 +40,12 @@ import { RSVPSelector } from './RSVPSelector';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input, SearchInput } from '@/components/ui/input';
 import { useProfile } from '@/hooks/useProfile';
+import { useLocation } from 'react-router-dom';
 
 export const MeetingsModule: React.FC = () => {
+  const location = useLocation();
+  const highlightMeetingId = location.state?.highlightMeetingId;
+  const [highlighted, setHighlighted] = useState<string | null>(null);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showAgendaDialog, setShowAgendaDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
@@ -335,6 +339,19 @@ export const MeetingsModule: React.FC = () => {
       </div>
     );
   }
+
+  React.useEffect(() => {
+    if (highlightMeetingId) {
+      setHighlighted(highlightMeetingId);
+      const el = document.getElementById(`meeting-card-${highlightMeetingId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const timeout = setTimeout(() => setHighlighted(null), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlightMeetingId]);
+
   return (
     <div className="max-w-5xl mx-auto px-0 space-y-6">
       {/* Search & Filter Bar */}
@@ -384,7 +401,7 @@ export const MeetingsModule: React.FC = () => {
           // 1. Only allow delete if user is creator or super_admin/admin
           const canDeleteThisMeeting = canDeleteMeetings && (userRole === 'super_admin' || userRole === 'admin' || meeting.created_by === userId);
           return (
-            <Card key={meeting.id} className={`w-full hover:shadow-md transition-shadow relative ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}> 
+            <Card key={meeting.id} className={`w-full hover:shadow-md transition-shadow relative ${isDeleting ? 'opacity-50 pointer-events-none' : ''} ${highlighted === meeting.id ? 'blink-highlight' : ''}`} id={`meeting-card-${meeting.id}`}> 
               {/* 6. Show overlay spinner if deleting */}
               {isDeleting && (
                 <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10">

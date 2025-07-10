@@ -43,14 +43,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [isMobile]);
 
-  const handleModuleChange = (module: string) => {
-    logger.log('Layout - Module changed to:', module);
+  const handleModuleChange = (module: string, id?: string) => {
+    logger.log('Layout - Module changed to:', module, 'ID:', id);
     setCurrentModule(module);
     if (isMobile) setSidebarOpen(false);
-    
+
+    if (module === 'documents' && id) {
+      // Open specific document
+      navigate(`/documents/doc/${id}`);
+      return;
+    }
+    if (module === 'meetings' && id) {
+      // Open meetings module and highlight/scroll to meeting
+      navigate('/meetings', { state: { highlightMeetingId: id } });
+      return;
+    }
+    if (module === 'voting' && id) {
+      // Open voting module and highlight/scroll to poll
+      navigate('/voting', { state: { highlightPollId: id } });
+      return;
+    }
+    // Default: just go to the module root
     const routePath = module === 'dashboard' ? '/' : `/${module}`;
     logger.log('Layout - Navigating to:', routePath);
-    
     try {
       navigate(routePath);
     } catch (error) {

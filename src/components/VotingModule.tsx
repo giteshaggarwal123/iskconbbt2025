@@ -431,7 +431,7 @@ export const VotingModule: React.FC = () => {
                   const overallResult = getOverallPollResult(poll);
                   const resultBadge = getResultBadge(overallResult);
                   return (
-                    <Card key={poll.id} className="hover:shadow-md transition-shadow border-l-4 border-l-gray-400 flex flex-row items-stretch">
+                    <Card key={poll.id} id={`poll-card-${poll.id}`} className={`hover:shadow-md transition-shadow border-l-4 border-l-gray-400 flex flex-row items-stretch ${highlighted === poll.id ? 'blink-highlight' : ''}`}>
                       <div className="flex-1">
                         <CardHeader className="pb-3 flex items-start justify-between">
                           <div className="flex-1">
@@ -515,7 +515,7 @@ export const VotingModule: React.FC = () => {
                   const overallResult = getOverallPollResult(poll);
                   const resultBadge = getResultBadge(overallResult);
                   return (
-                    <Card key={poll.id} className="hover:shadow-md transition-shadow border-l-4 border-l-gray-400 flex flex-row items-stretch">
+                    <Card key={poll.id} id={`poll-card-${poll.id}`} className={`hover:shadow-md transition-shadow border-l-4 border-l-gray-400 flex flex-row items-stretch ${highlighted === poll.id ? 'blink-highlight' : ''}`}>
                       <div className="flex-1">
                         <CardHeader className="pb-3 flex items-start justify-between">
                           <div className="flex-1">
