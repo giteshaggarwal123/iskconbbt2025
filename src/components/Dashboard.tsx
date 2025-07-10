@@ -245,7 +245,7 @@ export const Dashboard: React.FC = () => {
               >
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-sm truncate">{safe(poll.title, 'Untitled')}</span>
-                  {!isPastDeadline(poll.deadline) && <Button size="sm" className="bg-purple-600 text-white h-6 w-6 p-0" onClick={e => { e.stopPropagation(); navigate(`/voting/${poll.id}`); }}><Vote className="h-3 w-3" /></Button>}
+                  <Button size="sm" variant="outline" onClick={e => { e.stopPropagation(); navigate(`/voting/${poll.id}`); }} className="h-6 w-6 p-0 ml-2"><ExternalLink className="h-3 w-3" /></Button>
                 </div>
                 <span className="text-xs text-muted-foreground">Deadline: {poll.deadline ? new Date(poll.deadline).toLocaleDateString() : ''}</span>
               </div>
