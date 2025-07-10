@@ -21,6 +21,7 @@ interface Poll {
   status: string;
   deadline: string;
   created_at: string;
+  hasVoted: boolean; // Added for filtering
 }
 
 export const Dashboard: React.FC = () => {
@@ -67,7 +68,14 @@ export const Dashboard: React.FC = () => {
   const recentEmails = emails
     .sort((a, b) => new Date(b.receivedDateTime).getTime() - new Date(a.receivedDateTime).getTime())
     .slice(0, 2);
-  const sortedPolls = polls
+  // Only show polls that are active or past-date and not voted by the user
+  const dashboardPolls = polls
+    .filter(poll => {
+      const now = new Date();
+      const isActive = poll.status === 'active' && (!poll.deadline || new Date(poll.deadline) >= now);
+      const isPastDate = poll.status === 'active' && poll.deadline && new Date(poll.deadline) < now;
+      return (isActive || isPastDate) && !poll.hasVoted;
+    })
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 2);
 
@@ -230,7 +238,7 @@ export const Dashboard: React.FC = () => {
             <CardTitle className="text-base">Active Polls</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex flex-col justify-between">
-            {sortedPolls.length > 0 ? sortedPolls.map(poll => (
+            {dashboardPolls.length > 0 ? dashboardPolls.map(poll => (
               <div
                 key={poll.id}
                 className="mb-2 p-2 rounded hover:bg-muted/50 flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-600"
