@@ -235,11 +235,11 @@ export const Dashboard: React.FC = () => {
                 key={poll.id}
                 className="mb-2 p-2 rounded hover:bg-muted/50 flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-600"
                 tabIndex={0}
-                onClick={() => navigate(`/voting/${poll.id}`)}
+                onClick={() => navigate(`/polls/vote/${poll.id}`)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    navigate(`/voting/${poll.id}`);
+                    navigate(`/polls/vote/${poll.id}`);
                   }
                 }}
               >
