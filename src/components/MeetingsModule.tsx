@@ -117,42 +117,42 @@ export const MeetingsModule: React.FC = () => {
   // Upcoming meetings: start time is in the future, sorted by nearest first
   const upcomingMeetings = uniqueMeetings
     .filter(meeting => {
-      const startTime = parseISO(meeting.start_time);
+      const startTime = safeDate(meeting.start_time);
       return startTime >= now;
     })
-    .sort((a, b) => compareAsc(parseISO(a.start_time), parseISO(b.start_time)));
+    .sort((a, b) => compareAsc(safeDate(a.start_time), safeDate(b.start_time)));
   
   // Past meetings: start time is in the past, sorted by most recent first
   const pastMeetings = uniqueMeetings
     .filter(meeting => {
-      const startTime = parseISO(meeting.start_time);
+      const startTime = safeDate(meeting.start_time);
       return startTime < now;
     })
-    .sort((a, b) => compareDesc(parseISO(a.start_time), parseISO(b.start_time)));
+    .sort((a, b) => compareDesc(safeDate(a.start_time), safeDate(b.start_time)));
 
   // Unified, filtered meeting list
   const filteredMeetings = useMemo(() => {
     let list = uniqueMeetings;
     if (statusFilter === 'upcoming') {
-      list = list.filter(meeting => parseISO(meeting.start_time) >= now);
+      list = list.filter(meeting => safeDate(meeting.start_time) >= now);
       if (searchTerm.trim()) {
         list = list.filter(meeting => meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
       }
       // Upcoming: soonest first
-      return list.sort((a, b) => compareAsc(parseISO(a.start_time), parseISO(b.start_time)));
+      return list.sort((a, b) => compareAsc(safeDate(a.start_time), safeDate(b.start_time)));
     } else if (statusFilter === 'past') {
-      list = list.filter(meeting => parseISO(meeting.start_time) < now);
+      list = list.filter(meeting => safeDate(meeting.start_time) < now);
       if (searchTerm.trim()) {
         list = list.filter(meeting => meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
       }
       // Past: most recent first
-      return list.sort((a, b) => compareDesc(parseISO(a.start_time), parseISO(b.start_time)));
+      return list.sort((a, b) => compareDesc(safeDate(a.start_time), safeDate(b.start_time)));
     } else {
       // All: most recent first
       if (searchTerm.trim()) {
         list = list.filter(meeting => meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
       }
-      return list.sort((a, b) => compareDesc(parseISO(a.start_time), parseISO(b.start_time)));
+      return list.sort((a, b) => compareDesc(safeDate(a.start_time), safeDate(b.start_time)));
     }
   }, [uniqueMeetings, statusFilter, searchTerm, now]);
 
@@ -225,7 +225,7 @@ export const MeetingsModule: React.FC = () => {
 
       // For regular users, check if it's too early
       const now = new Date();
-      const start = parseISO(meeting.start_time);
+      const start = safeDate(meeting.start_time);
       const hourBeforeStart = new Date(start.getTime() - 60 * 60 * 1000);
       
       if (now < hourBeforeStart) {
@@ -265,8 +265,8 @@ export const MeetingsModule: React.FC = () => {
   };
 
   const formatMeetingTime = (startTime: string, endTime: string) => {
-    const start = parseISO(startTime);
-    const end = parseISO(endTime);
+    const start = safeDate(startTime);
+    const end = safeDate(endTime);
     const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
     const hours = Math.floor(duration / 60);
     const minutes = duration % 60;
@@ -284,15 +284,15 @@ export const MeetingsModule: React.FC = () => {
 
   const isLiveMeeting = (meeting: any) => {
     const now = new Date();
-    const start = parseISO(meeting.start_time);
-    const end = parseISO(meeting.end_time);
+    const start = safeDate(meeting.start_time);
+    const end = safeDate(meeting.end_time);
     return now >= start && now <= end;
   };
 
   const canCheckIn = (meeting: any) => {
     const now = new Date();
-    const start = parseISO(meeting.start_time);
-    const end = parseISO(meeting.end_time);
+    const start = safeDate(meeting.start_time);
+    const end = safeDate(meeting.end_time);
     const hourBeforeStart = new Date(start.getTime() - 60 * 60 * 1000);
     return now >= hourBeforeStart && now <= end;
   };
@@ -330,6 +330,11 @@ export const MeetingsModule: React.FC = () => {
 
   // Defensive helpers
   const safe = (val: any, fallback: string = '') => (val === undefined || val === null ? fallback : val);
+  const safeDate = (dateStr: string | undefined | null) => {
+    if (!dateStr) return new Date(0); // fallback to epoch
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date(0) : d;
+  };
 
   // UI
   if (loading) {
@@ -392,7 +397,7 @@ export const MeetingsModule: React.FC = () => {
         )}
         {filteredMeetings.map(meeting => {
           const timeInfo = formatMeetingTime(safe(meeting.start_time, ''), safe(meeting.end_time, ''));
-          const isPast = meeting.start_time ? parseISO(meeting.start_time) < now : false;
+          const isPast = meeting.start_time ? safeDate(meeting.start_time) < now : false;
           const isLive = !isPast && isLiveMeeting(meeting);
           const canDoCheckIn = !isPast && canCheckIn(meeting);
           const attendeeCount = typeof meeting.attendee_count === 'number' ? meeting.attendee_count : (Array.isArray(meeting.attendees) ? meeting.attendees.length : 0);
