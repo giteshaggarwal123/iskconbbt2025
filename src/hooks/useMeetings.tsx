@@ -65,9 +65,18 @@ export const useMeetings = () => {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      
+      if (!Array.isArray(data)) {
+        console.warn('Meetings API returned non-array data:', data);
+        setMeetings([]);
+        return;
+      }
+      // Defensive: filter out malformed meetings
+      const validMeetings = data.filter(m => m && m.id && m.start_time && m.end_time && m.title);
+      if (validMeetings.length !== data.length) {
+        console.warn('Some meetings were skipped due to missing required fields.');
+      }
       // Get unique creator IDs
-      const creatorIds = Array.from(new Set((data || []).map(m => m.created_by).filter(Boolean)));
+      const creatorIds = Array.from(new Set((validMeetings || []).map(m => m.created_by).filter(Boolean)));
       let profilesMap: Record<string, { first_name: string | null, last_name: string | null, email: string | null }> = {};
       if (creatorIds.length > 0) {
         const { data: profiles } = await supabase
@@ -81,7 +90,7 @@ export const useMeetings = () => {
         }
       }
       // Normalize manual_attendees and attach creator name
-      const processedMeetings = (data || []).map(meeting => {
+      const processedMeetings = (validMeetings || []).map(meeting => {
         let created_by_name = meeting.created_by;
         const profile = profilesMap[meeting.created_by];
         if (profile) {
@@ -130,6 +139,7 @@ export const useMeetings = () => {
       setMeetings(filteredMeetings);
     } catch (error: any) {
       console.error('Error fetching meetings:', error);
+      setMeetings([]);
       toast({
         title: "Error",
         description: "Failed to load meetings",
