@@ -18,6 +18,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useParams, useLocation } from 'react-router-dom';
 
+interface Poll {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  deadline?: string;
+  created_at?: string;
+  unique_id?: string;
+  stats?: {
+    voted_count?: number;
+    total_voters?: number;
+    sub_poll_count?: number;
+  };
+  hasVoted?: boolean;
+  [key: string]: any;
+}
+
 export const VotingModule: React.FC = () => {
   const location = useLocation();
   const highlightPollId = location.state?.highlightPollId;
@@ -27,7 +44,7 @@ export const VotingModule: React.FC = () => {
   const [showResultsDialog, setShowResultsDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showReopenDialog, setShowReopenDialog] = useState(false);
-  const [selectedPoll, setSelectedPoll] = useState<any>(null);
+  const [selectedPoll, setSelectedPoll] = useState<Poll | null>(null);
   const [pollResults, setPollResults] = useState<{[key: string]: any}>({});
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
   const [pendingCompletePollId, setPendingCompletePollId] = useState<string | null>(null);
@@ -107,7 +124,7 @@ export const VotingModule: React.FC = () => {
     }
   }, [pastDatePolls]);
 
-  const getOverallPollResult = (poll: any) => {
+  const getOverallPollResult = (poll: Poll) => {
     const results = pollResults[poll.id];
     if (!results || !poll.sub_polls) return null;
 
@@ -148,17 +165,17 @@ export const VotingModule: React.FC = () => {
     }
   };
 
-  const handleVoteNow = (poll: any) => {
+  const handleVoteNow = (poll: Poll) => {
     setSelectedPoll(poll);
     setShowVotingDialog(true);
   };
 
-  const handleViewResults = (poll: any) => {
+  const handleViewResults = (poll: Poll) => {
     setSelectedPoll(poll);
     setShowResultsDialog(true);
   };
 
-  const handleEditPoll = (poll: any) => {
+  const handleEditPoll = (poll: Poll) => {
     if (!userRole.canEditVoting) {
       toast({
         title: "Access Denied",
@@ -171,7 +188,7 @@ export const VotingModule: React.FC = () => {
     setShowEditDialog(true);
   };
 
-  const handleReopenPoll = (poll: any) => {
+  const handleReopenPoll = (poll: Poll) => {
     if (!userRole.canEditVoting) {
       toast({
         title: "Access Denied",
@@ -251,7 +268,7 @@ export const VotingModule: React.FC = () => {
   }, [highlightPollId]);
 
   // Sort polls by unique_id ascending within each tab
-  const sortByUniqueId = (a: any, b: any) => {
+  const sortByUniqueId = (a: Poll, b: Poll) => {
     if (!a.unique_id && !b.unique_id) return 0;
     if (!a.unique_id) return 1;
     if (!b.unique_id) return -1;
@@ -315,7 +332,7 @@ export const VotingModule: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {sortedActivePolls.map((poll) => (
+                {sortedActivePolls.map((poll: Poll) => (
                   <Card key={poll.id} id={`poll-card-${poll.id}`} className={`hover:shadow-md transition-shadow border-l-4 border-l-green-500 flex flex-row items-stretch ${highlighted === poll.id ? 'blink-highlight' : ''}`}>
                     <div className="flex-1">
                       <CardHeader className="pb-3 flex items-start justify-between">
@@ -410,7 +427,7 @@ export const VotingModule: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {sortedPastDatePolls.map((poll) => {
+                {sortedPastDatePolls.map((poll: Poll) => {
                   const overallResult = getOverallPollResult(poll);
                   const resultBadge = getResultBadge(overallResult);
                   return (
@@ -494,7 +511,7 @@ export const VotingModule: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {completedPolls.map((poll) => {
+                {completedPolls.map((poll: Poll) => {
                   const overallResult = getOverallPollResult(poll);
                   const resultBadge = getResultBadge(overallResult);
                   return (
