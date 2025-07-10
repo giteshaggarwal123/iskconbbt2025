@@ -178,6 +178,11 @@ const App = () => {
                         <VotingModule />
                       </ProtectedRoute>
                     } />
+                    <Route path="/polls/vote/:pollId" element={
+                      <ProtectedRoute>
+                        <VotingModule />
+                      </ProtectedRoute>
+                    } />
                     <Route path="/members" element={
                       <ProtectedRoute>
                         <MembersModule />
