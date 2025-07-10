@@ -229,12 +229,23 @@ export const Dashboard: React.FC = () => {
             <Vote className="h-5 w-5 text-purple-600" />
             <CardTitle className="text-base">Active Polls</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 flex-1 flex flex-col justify-between">
+          <CardContent className="pt-0 flex flex-col justify-between">
             {sortedPolls.length > 0 ? sortedPolls.map(poll => (
-              <div key={poll.id} className="mb-2 p-2 rounded hover:bg-muted/50 flex flex-col">
+              <div
+                key={poll.id}
+                className="mb-2 p-2 rounded hover:bg-muted/50 flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-600"
+                tabIndex={0}
+                onClick={() => navigate(`/voting/${poll.id}`)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/voting/${poll.id}`);
+                  }
+                }}
+              >
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-sm truncate">{safe(poll.title, 'Untitled')}</span>
-                  {!isPastDeadline(poll.deadline) && <Button size="sm" className="bg-purple-600 text-white h-6 w-6 p-0" onClick={() => handleVoteNow(poll)}><Vote className="h-3 w-3" /></Button>}
+                  {!isPastDeadline(poll.deadline) && <Button size="sm" className="bg-purple-600 text-white h-6 w-6 p-0" onClick={e => { e.stopPropagation(); navigate(`/voting/${poll.id}`); }}><Vote className="h-3 w-3" /></Button>}
                 </div>
                 <span className="text-xs text-muted-foreground">Deadline: {poll.deadline ? new Date(poll.deadline).toLocaleDateString() : ''}</span>
               </div>
