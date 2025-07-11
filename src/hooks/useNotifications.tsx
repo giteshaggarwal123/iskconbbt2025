@@ -55,40 +55,44 @@ export const useNotifications = () => {
       setLoading(true);
       logger.log('Fetching notifications for user:', user.id);
 
-      // Fetch recent meetings (last 7 days)
-      const { data: meetings } = await supabase
-        .from('meetings')
-        .select('*')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(3);
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Fetch recent documents (last 7 days)
-      const { data: documents } = await supabase
-        .from('documents')
-        .select('*')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(3);
+      // Fetch recent meetings, documents, and polls in parallel
+      const [meetingsResult, documentsResult, pollsResult] = await Promise.allSettled([
+        supabase
+          .from('meetings')
+          .select('*')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3),
+        supabase
+          .from('documents')
+          .select('*')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3),
+        supabase
+          .from('polls')
+          .select('*')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      ]);
 
-      // Fetch recent polls (last 7 days)
-      const { data: polls } = await supabase
-        .from('polls')
-        .select('*')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(3);
+      const meetings = meetingsResult.status === 'fulfilled' ? meetingsResult.value.data || [] : [];
+      const documents = documentsResult.status === 'fulfilled' ? documentsResult.value.data || [] : [];
+      const polls = pollsResult.status === 'fulfilled' ? pollsResult.value.data || [] : [];
 
       const notificationList: Notification[] = [];
+      const now = new Date();
 
       // Add meeting notifications
-      meetings?.forEach(meeting => {
+      meetings.forEach(meeting => {
+        if (!meeting.title || !meeting.start_time) return;
+        
         const meetingTime = new Date(meeting.start_time);
-        const now = new Date();
         const timeDiff = meetingTime.getTime() - now.getTime();
         const hoursUntilMeeting = timeDiff / (1000 * 60 * 60);
-
-        // Add notification for newly created meetings (only if created in last 3 days)
         const meetingCreated = new Date(meeting.created_at);
         const daysSinceCreated = (now.getTime() - meetingCreated.getTime()) / (1000 * 60 * 60 * 24);
         
@@ -105,7 +109,6 @@ export const useNotifications = () => {
           });
         }
 
-        // Add reminder for upcoming meetings (within 24 hours)
         if (hoursUntilMeeting > 0 && hoursUntilMeeting <= 24) {
           notificationList.push({
             id: `meeting-reminder-${meeting.id}`,
@@ -120,10 +123,11 @@ export const useNotifications = () => {
         }
       });
 
-      // Add document notifications (only if created in last 3 days)
-      documents?.forEach(doc => {
+      // Add document notifications
+      documents.forEach(doc => {
+        if (!doc.name) return;
+        
         const docCreated = new Date(doc.created_at);
-        const now = new Date();
         const daysSinceCreated = (now.getTime() - docCreated.getTime()) / (1000 * 60 * 60 * 24);
         
         if (daysSinceCreated <= 3) {
@@ -140,10 +144,11 @@ export const useNotifications = () => {
         }
       });
 
-      // Add poll notifications (only if created in last 3 days)
-      polls?.forEach(poll => {
+      // Add poll notifications
+      polls.forEach(poll => {
+        if (!poll.title || !poll.deadline) return;
+        
         const pollCreated = new Date(poll.created_at);
-        const now = new Date();
         const daysSinceCreated = (now.getTime() - pollCreated.getTime()) / (1000 * 60 * 60 * 24);
         
         if (daysSinceCreated <= 3) {
@@ -180,6 +185,8 @@ export const useNotifications = () => {
       setNotifications(processedNotifications);
     } catch (error) {
       logger.error('Error fetching notifications:', error);
+      // Set empty notifications on error to prevent app crash
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -268,10 +275,24 @@ export const useNotifications = () => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   }, []);
 
-  // Fetch notifications when user changes or read notifications change
+  // Fetch notifications when user changes
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user?.id]); // Only depend on user ID to prevent infinite loops
+
+  // Fetch notifications when readNotifications changes (on mount and localStorage load)
+  useEffect(() => {
+    if (user && readNotifications.size >= 0) {
+      // Debounce the fetch to prevent too many calls
+      const timeoutId = setTimeout(() => {
+        fetchNotifications();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [readNotifications.size, user?.id]); // Only depend on size to prevent infinite loops
 
   return {
     notifications,
