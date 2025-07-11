@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -165,16 +165,19 @@ export const useNotifications = () => {
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 6);
 
-      // Filter out notifications that have been marked as read
-      const unreadNotifications = sortedNotifications.filter(n => !readNotifications.has(n.id));
+      // Mark notifications as read/unread based on localStorage
+      const processedNotifications = sortedNotifications.map(n => ({
+        ...n,
+        read: readNotifications.has(n.id)
+      }));
       
       logger.log('Fetched notifications:', {
-        total: sortedNotifications.length,
-        unread: unreadNotifications.length,
+        total: processedNotifications.length,
+        unread: processedNotifications.filter(n => !n.read).length,
         readCount: readNotifications.size
       });
       
-      setNotifications(unreadNotifications);
+      setNotifications(processedNotifications);
     } catch (error) {
       logger.error('Error fetching notifications:', error);
     } finally {
@@ -209,16 +212,15 @@ export const useNotifications = () => {
     // Save to localStorage
     saveReadNotifications(newReadNotifications);
     
-    // Clear notifications list
-    setNotifications([]);
+    // Update notifications state to mark all as read
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     
-    fetchNotifications(); // Ensure notifications state is in sync
     logger.log('All notifications marked as read');
     toast({
       title: "Success",
       description: "All notifications marked as read"
     });
-  }, [notifications, readNotifications, saveReadNotifications, toast, fetchNotifications]);
+  }, [notifications, readNotifications, saveReadNotifications, toast]);
 
   const markAsRead = useCallback((notificationId: string) => {
     // Add to read notifications set
@@ -228,12 +230,13 @@ export const useNotifications = () => {
     // Save to localStorage
     saveReadNotifications(newReadNotifications);
     
-    // Remove the specific notification when marked as read
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    // Update the specific notification to mark as read
+    setNotifications(prev => prev.map(n => 
+      n.id === notificationId ? { ...n, read: true } : n
+    ));
     
-    fetchNotifications(); // Ensure notifications state is in sync
     logger.log('Notification marked as read:', notificationId);
-  }, [readNotifications, saveReadNotifications, fetchNotifications]);
+  }, [readNotifications, saveReadNotifications]);
 
   const handleNotificationClick = useCallback((notification: Notification) => {
     markAsRead(notification.id);
@@ -245,10 +248,14 @@ export const useNotifications = () => {
     };
   }, [markAsRead]);
 
+  // Memoize unread count for better performance
+  const unreadCount = useMemo(() => {
+    return notifications.filter(n => !n.read).length;
+  }, [notifications]);
+
   const getUnreadCount = useCallback(() => {
-    // Unread count is the number of notifications that are not in readNotifications
-    return notifications.filter(n => !readNotifications.has(n.id)).length;
-  }, [notifications, readNotifications]);
+    return unreadCount;
+  }, [unreadCount]);
 
   const getTimeAgo = useCallback((dateString: string) => {
     const date = new Date(dateString);

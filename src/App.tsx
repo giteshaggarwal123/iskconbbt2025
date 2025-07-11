@@ -21,8 +21,6 @@ import { NotFound } from "@/pages/NotFound";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useNotificationIntegration } from "@/hooks/useNotificationIntegration";
 import React, { Suspense, useEffect, useRef } from "react";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 // Add this at the top or in a types file if not present
 // declare global {
@@ -86,31 +84,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-function MinimalRadixTest() {
-  const [open, setOpen] = React.useState(false);
-  return (
-    <div style={{ position: 'fixed', top: 10, left: 10, zIndex: 20000, background: 'white', padding: 16, border: '1px solid #ccc', borderRadius: 8 }}>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <button style={{ padding: 8, background: '#8E1616', color: 'white', borderRadius: 4 }}>Open Test Dialog</button>
-        </DialogTrigger>
-        <DialogContent>
-          <h2>Minimal Radix Test</h2>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Pick an option" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="one">One</SelectItem>
-              <SelectItem value="two">Two</SelectItem>
-              <SelectItem value="three">Three</SelectItem>
-            </SelectContent>
-          </Select>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
 
 const App = () => {
   const initRef = useRef(false);

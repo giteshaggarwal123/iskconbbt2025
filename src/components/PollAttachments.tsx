@@ -7,7 +7,7 @@ import { FileText, Download, Eye, File } from 'lucide-react';
 import { PollAttachment } from '@/hooks/usePolls';
 import { usePolls } from '@/hooks/usePolls';
 import { DocumentAnalytics } from './DocumentAnalytics';
-import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PollAttachmentsProps {
   attachments: PollAttachment[];
@@ -56,17 +56,29 @@ export const PollAttachments: React.FC<PollAttachmentsProps> = ({
     return 'File';
   };
 
-  const handleDownload = async (attachment: PollAttachment) => {
-    const { trackDownload } = useAnalyticsTracking({
-      documentId: attachment.id,
-      documentType: 'poll_attachment'
-    });
+  const trackAnalytics = async (documentId: string, action: 'download' | 'view') => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
+      await supabase.from('document_analytics').insert({
+        document_id: documentId,
+        user_id: user.id,
+        action,
+        document_type: 'poll_attachment',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error tracking analytics:', error);
+    }
+  };
+
+  const handleDownload = async (attachment: PollAttachment) => {
     try {
       console.log('Starting download for poll attachment:', attachment.id);
       
       // Track the download first
-      await trackDownload();
+      await trackAnalytics(attachment.id, 'download');
       console.log('Download tracked successfully for poll attachment:', attachment.id);
       
       // Then perform the actual download
@@ -79,16 +91,11 @@ export const PollAttachments: React.FC<PollAttachmentsProps> = ({
   };
 
   const handleView = async (attachment: PollAttachment) => {
-    const { trackView } = useAnalyticsTracking({
-      documentId: attachment.id,
-      documentType: 'poll_attachment'
-    });
-
     try {
       console.log('Starting view for poll attachment:', attachment.id);
       
       // Track the view first
-      await trackView();
+      await trackAnalytics(attachment.id, 'view');
       console.log('View tracked successfully for poll attachment:', attachment.id);
       
       // Then perform the actual view
@@ -135,8 +142,8 @@ export const PollAttachments: React.FC<PollAttachmentsProps> = ({
             const FileIcon = getFileIcon(attachment.mime_type);
             const canView = canViewDocument(attachment.mime_type) && onViewDocument;
             // Safely access view_count and download_count with fallback to 0
-            const viewCount = (attachment as any).view_count || 0;
-            const downloadCount = (attachment as any).download_count || 0;
+            const viewCount = (attachment as PollAttachment & { view_count?: number }).view_count || 0;
+            const downloadCount = (attachment as PollAttachment & { download_count?: number }).download_count || 0;
 
             return (
               <div
