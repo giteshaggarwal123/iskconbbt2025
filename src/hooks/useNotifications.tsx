@@ -212,12 +212,13 @@ export const useNotifications = () => {
     // Clear notifications list
     setNotifications([]);
     
+    fetchNotifications(); // Ensure notifications state is in sync
     logger.log('All notifications marked as read');
     toast({
       title: "Success",
       description: "All notifications marked as read"
     });
-  }, [notifications, readNotifications, saveReadNotifications, toast]);
+  }, [notifications, readNotifications, saveReadNotifications, toast, fetchNotifications]);
 
   const markAsRead = useCallback((notificationId: string) => {
     // Add to read notifications set
@@ -230,8 +231,9 @@ export const useNotifications = () => {
     // Remove the specific notification when marked as read
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
     
+    fetchNotifications(); // Ensure notifications state is in sync
     logger.log('Notification marked as read:', notificationId);
-  }, [readNotifications, saveReadNotifications]);
+  }, [readNotifications, saveReadNotifications, fetchNotifications]);
 
   const handleNotificationClick = useCallback((notification: Notification) => {
     markAsRead(notification.id);
@@ -244,11 +246,9 @@ export const useNotifications = () => {
   }, [markAsRead]);
 
   const getUnreadCount = useCallback(() => {
-    // The count is the length of currently displayed notifications
-    const unreadCount = notifications.length;
-    logger.log('Unread notifications count:', unreadCount);
-    return unreadCount;
-  }, [notifications]);
+    // Unread count is the number of notifications that are not in readNotifications
+    return notifications.filter(n => !readNotifications.has(n.id)).length;
+  }, [notifications, readNotifications]);
 
   const getTimeAgo = useCallback((dateString: string) => {
     const date = new Date(dateString);
