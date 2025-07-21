@@ -89,18 +89,20 @@ export const useNotifications = () => {
       // Add meeting notifications
       meetings.forEach(meeting => {
         if (!meeting.title || !meeting.start_time) return;
-        
+
         const meetingTime = new Date(meeting.start_time);
+        const now = new Date();
         const timeDiff = meetingTime.getTime() - now.getTime();
         const hoursUntilMeeting = timeDiff / (1000 * 60 * 60);
         const meetingCreated = new Date(meeting.created_at);
         const daysSinceCreated = (now.getTime() - meetingCreated.getTime()) / (1000 * 60 * 60 * 24);
-        
+
+        // Only show "New Meeting Scheduled" for meetings created in the last 3 days
         if (daysSinceCreated <= 3) {
           notificationList.push({
             id: `meeting-${meeting.id}`,
             title: 'New Meeting Scheduled',
-            message: `${meeting.title} scheduled for ${meetingTime.toLocaleDateString()}`,
+            message: `${meeting.title} scheduled for ${meetingTime.toLocaleString()}`,
             type: 'meeting',
             read: false,
             created_at: meeting.created_at,
@@ -109,14 +111,15 @@ export const useNotifications = () => {
           });
         }
 
+        // Only show "Meeting Reminder" for meetings in the future, within the next 24 hours
         if (hoursUntilMeeting > 0 && hoursUntilMeeting <= 24) {
           notificationList.push({
             id: `meeting-reminder-${meeting.id}`,
             title: 'Meeting Reminder',
-            message: `${meeting.title} starts in ${Math.round(hoursUntilMeeting)} hours`,
+            message: `${meeting.title} starts in ${Math.round(hoursUntilMeeting)} hours (${meetingTime.toLocaleString()})`,
             type: 'meeting',
             read: false,
-            created_at: new Date().toISOString(),
+            created_at: now.toISOString(),
             related_id: meeting.id,
             related_type: 'meeting'
           });
