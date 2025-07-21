@@ -1,46 +1,45 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Calendar, Clock, Users, Video, FileText, Plus, Trash2, UserCheck, ExternalLink, Copy, CheckSquare, AlertTriangle, RefreshCw, ChevronLeft, X, Pencil } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Calendar, Users, Video, FileText, Plus, Trash2, UserCheck, CheckSquare, RefreshCw, ChevronLeft, Pencil } from 'lucide-react';
 import { ScheduleMeetingDialog } from './ScheduleMeetingDialog';
 import { ViewAgendaDialog } from './ViewAgendaDialog';
 import { ManageAttendeesDialog } from './ManageAttendeesDialog';
 import { CheckInDialog } from './CheckInDialog';
-import { CalendarView } from './CalendarView';
 import { RSVPResponseDialog } from './RSVPResponseDialog';
-import { MeetingDeletionProgress } from './MeetingDeletionProgress';
 import { MeetingTranscriptDialog } from './MeetingTranscriptDialog';
 import { useMeetings } from '@/hooks/useMeetings';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useAutoTranscript } from '@/hooks/useAutoTranscript';
 import { useOutlookSync } from '@/hooks/useOutlookSync';
-import { format, parseISO, compareAsc, compareDesc } from 'date-fns';
+import { format, compareAsc, compareDesc } from 'date-fns';
 import { useUserRole } from '@/hooks/useUserRole';
-import { RSVPSelector } from './RSVPSelector';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Input, SearchInput } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/input';
 import { useProfile } from '@/hooks/useProfile';
 import { useLocation } from 'react-router-dom';
+
+// Define meeting type interface
+interface Meeting {
+  id: string;
+  title?: string;
+  description?: string;
+  start_time?: string;
+  end_time?: string;
+  created_at?: string;
+  created_by?: string;
+  created_by_name?: string;
+  meeting_id?: string;
+  meeting_type?: string;
+  teams_join_url?: string;
+  teams_meeting_id?: string;
+  outlook_event_id?: string;
+  attendee_count?: number;
+  attendees?: any[];
+  rsvp_enabled?: boolean;
+}
 
 export const MeetingsModule: React.FC = () => {
   const location = useLocation();
@@ -53,11 +52,11 @@ export const MeetingsModule: React.FC = () => {
   const [showRSVPDialog, setShowRSVPDialog] = useState(false);
   const [showTranscriptDialog, setShowTranscriptDialog] = useState(false);
   const [showDeletionProgress, setShowDeletionProgress] = useState<string | null>(null);
-  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [preselectedDate, setPreselectedDate] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
-  const [editMeeting, setEditMeeting] = useState<any>(null);
+  const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
   
   const { 
     meetings, 
@@ -94,7 +93,20 @@ export const MeetingsModule: React.FC = () => {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [syncing, lastSyncTime]);
+  }, [syncing, lastSyncTime, fetchMeetings]);
+
+  // Handle highlighting of meetings from navigation
+  useEffect(() => {
+    if (highlightMeetingId) {
+      setHighlighted(highlightMeetingId);
+      const el = document.getElementById(`meeting-card-${highlightMeetingId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const timeout = setTimeout(() => setHighlighted(null), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlightMeetingId]);
 
   // Filter and sort meetings properly by date and time
   const now = new Date();
@@ -112,7 +124,7 @@ export const MeetingsModule: React.FC = () => {
     }
     
     return acc;
-  }, [] as any[]);
+  }, [] as Meeting[]);
   
   // Upcoming meetings: start time is in the future, sorted by nearest first
   const upcomingMeetings = uniqueMeetings
@@ -160,22 +172,22 @@ export const MeetingsModule: React.FC = () => {
   const [expandedMeetingId, setExpandedMeetingId] = useState<string | null>(null);
   const toggleExpand = (id: string) => setExpandedMeetingId(expandedMeetingId === id ? null : id);
 
-  const handleViewAgenda = (meeting: any) => {
+const handleViewAgenda = (meeting: Meeting) => {
     setSelectedMeeting(meeting);
     setShowAgendaDialog(true);
   };
 
-  const handleViewTranscript = (meeting: any) => {
+  const handleViewTranscript = (meeting: Meeting) => {
     setSelectedMeeting(meeting);
     setShowTranscriptDialog(true);
   };
 
-  const handleCheckIn = (meeting: any) => {
+  const handleCheckIn = (meeting: Meeting) => {
     setSelectedMeeting(meeting);
     setShowCheckInDialog(true);
   };
 
-  const handleViewRSVP = (meeting: any) => {
+  const handleViewRSVP = (meeting: Meeting) => {
     console.log('RSVP button clicked for meeting:', meeting);
     setSelectedMeeting(meeting);
     setShowRSVPDialog(true);
@@ -215,7 +227,7 @@ export const MeetingsModule: React.FC = () => {
     });
   };
 
-  const handleJoinNow = (meeting: any) => {
+  const handleJoinNow = (meeting: Meeting) => {
     if (meeting.teams_join_url) {
       // Allow super admins and admins to join anytime
       if (userRole === 'super_admin' || userRole === 'admin') {
@@ -282,14 +294,14 @@ export const MeetingsModule: React.FC = () => {
     };
   };
 
-  const isLiveMeeting = (meeting: any) => {
+  const isLiveMeeting = (meeting: Meeting) => {
     const now = new Date();
     const start = safeDate(meeting.start_time);
     const end = safeDate(meeting.end_time);
     return now >= start && now <= end;
   };
 
-  const canCheckIn = (meeting: any) => {
+  const canCheckIn = (meeting: Meeting) => {
     const now = new Date();
     const start = safeDate(meeting.start_time);
     const end = safeDate(meeting.end_time);
@@ -329,7 +341,7 @@ export const MeetingsModule: React.FC = () => {
   const userId = user?.id;
 
   // Defensive helpers
-  const safe = (val: any, fallback: string = '') => (val === undefined || val === null ? fallback : val);
+  const safe = (val: string | undefined | null, fallback: string = '') => (val === undefined || val === null ? fallback : val);
   const safeDate = (dateStr: string | undefined | null) => {
     if (!dateStr) return new Date(0); // fallback to epoch
     const d = new Date(dateStr);
@@ -348,18 +360,6 @@ export const MeetingsModule: React.FC = () => {
     if (!Array.isArray(meetings) || meetings.length === 0) {
       return <div className="text-center text-muted-foreground py-12">No meetings found.</div>;
     }
-
-    React.useEffect(() => {
-      if (highlightMeetingId) {
-        setHighlighted(highlightMeetingId);
-        const el = document.getElementById(`meeting-card-${highlightMeetingId}`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        const timeout = setTimeout(() => setHighlighted(null), 2000);
-        return () => clearTimeout(timeout);
-      }
-    }, [highlightMeetingId]);
 
     return (
       <div className="max-w-5xl mx-auto px-0 space-y-6">
