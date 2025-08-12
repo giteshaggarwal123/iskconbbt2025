@@ -10,6 +10,15 @@ export const useAutoTranscript = () => {
   const { accessToken, isConnected } = useMicrosoftAuth();
   const { toast } = useToast();
 
+  // Safety check to ensure all dependencies are available
+  if (!user || !accessToken || !isConnected) {
+    console.log('Auto-transcript: Dependencies not ready, skipping initialization');
+    return {
+      processExpiredMeetings: async () => {},
+      processMeetingTranscript: async () => {}
+    };
+  }
+
   const getMeetingTranscriptsFolderId = async () => {
     try {
       // Find the "Meeting Transcripts" folder inside "ISKCON Repository"
@@ -219,7 +228,11 @@ ${processedTranscript.summary}
 
   // Set up automatic checking every 15 minutes (more frequent for better responsiveness)
   useEffect(() => {
-    if (!user || !isConnected) return;
+    // Ensure all dependencies are available before setting up monitoring
+    if (!user?.id || !isConnected || !accessToken) {
+      console.log('Auto-transcript: Waiting for user authentication and Microsoft connection...');
+      return;
+    }
 
     console.log('Setting up auto-transcript monitoring...');
 
@@ -235,7 +248,7 @@ ${processedTranscript.summary}
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
-  }, [user, isConnected, accessToken]);
+  }, [user?.id, isConnected, accessToken]);
 
   return {
     processExpiredMeetings,
