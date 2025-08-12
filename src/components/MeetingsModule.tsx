@@ -16,28 +16,31 @@ import { useToast } from '@/hooks/use-toast';
 import { useOutlookSync } from '@/hooks/useOutlookSync';
 import { format, compareAsc, compareDesc } from 'date-fns';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { SearchInput } from '@/components/ui/input';
 import { useProfile } from '@/hooks/useProfile';
 import { useLocation } from 'react-router-dom';
 
-// Define meeting type interface
+// Define Meeting interface matching the one in useMeetings hook
 interface Meeting {
   id: string;
-  title?: string;
-  description?: string;
-  start_time?: string;
-  end_time?: string;
-  created_at?: string;
-  created_by?: string;
-  created_by_name?: string;
+  title: string;
+  description: string | null;
+  start_time: string;
+  end_time: string;
+  location: string | null;
+  meeting_type: string | null;
+  status: string | null;
+  created_by: string;
+  created_at: string | null;
+  teams_join_url: string | null;
+  teams_meeting_id: string | null;
+  outlook_event_id: string | null;
   meeting_id?: string;
-  meeting_type?: string;
-  teams_join_url?: string;
-  teams_meeting_id?: string;
-  outlook_event_id?: string;
+  attendees?: { user_id: string; status: string }[];
   attendee_count?: number;
-  attendees?: any[];
+  manual_attendees?: (string | { email: string; rsvp: 'yes' | 'no' | 'maybe' | null })[];
+  created_by_name?: string;
+  agendas?: string[];
   rsvp_enabled?: boolean;
 }
 
@@ -61,7 +64,6 @@ export const MeetingsModule: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const { userRole, isSuperAdmin, isAdmin, canDeleteMeetings, canScheduleMeetings } = useUserRole();
   const { profile } = useProfile();
   const { syncing, lastSyncTime, syncOutlookMeetings } = useOutlookSync();
@@ -70,11 +72,8 @@ export const MeetingsModule: React.FC = () => {
   const { 
     meetings, 
     loading, 
-    deletingMeetings, 
-    createMeeting, 
     deleteMeeting, 
     fetchMeetings,
-    getDeletionProgress,
     isDeletingMeeting
   } = useMeetings();
 
@@ -130,12 +129,12 @@ export const MeetingsModule: React.FC = () => {
     }
 
     // Remove duplicates and filter out invalid meetings
-    const validMeetings = meetings.filter((meeting: Meeting) => meeting && meeting.id);
+    const validMeetings = meetings.filter((meeting) => meeting && meeting.id);
     
-    const uniqueMeetings = validMeetings.reduce((acc: Meeting[], meeting: Meeting) => {
+    const uniqueMeetings = validMeetings.reduce((acc, meeting) => {
       if (!meeting) return acc;
       
-      const isDuplicate = acc.some((existing: Meeting) => 
+      const isDuplicate = acc.some((existing) => 
         existing && meeting.outlook_event_id && existing.outlook_event_id === meeting.outlook_event_id ||
         existing && meeting.teams_meeting_id && existing.teams_meeting_id === meeting.teams_meeting_id ||
         existing && existing.id === meeting.id
@@ -161,12 +160,12 @@ export const MeetingsModule: React.FC = () => {
 
     // Apply status filter
     if (statusFilter === 'upcoming') {
-      list = list.filter((meeting: Meeting) => {
+      list = list.filter((meeting) => {
         if (!meeting || !meeting.start_time) return false;
         return safeDate(meeting.start_time) >= now;
       });
     } else if (statusFilter === 'past') {
-      list = list.filter((meeting: Meeting) => {
+      list = list.filter((meeting) => {
         if (!meeting || !meeting.start_time) return false;
         return safeDate(meeting.start_time) < now;
       });
@@ -174,7 +173,7 @@ export const MeetingsModule: React.FC = () => {
 
     // Apply search filter
     if (searchTerm.trim()) {
-      list = list.filter((meeting: Meeting) => {
+      list = list.filter((meeting) => {
         if (!meeting || !meeting.title) return false;
         return meeting.title.toLowerCase().includes(searchTerm.toLowerCase());
       });
@@ -182,12 +181,12 @@ export const MeetingsModule: React.FC = () => {
 
     // Sort meetings
     if (statusFilter === 'upcoming') {
-      return list.sort((a: Meeting, b: Meeting) => {
+      return list.sort((a, b) => {
         if (!a || !b || !a.start_time || !b.start_time) return 0;
         return compareAsc(safeDate(a.start_time), safeDate(b.start_time));
       });
     } else {
-      return list.sort((a: Meeting, b: Meeting) => {
+      return list.sort((a, b) => {
         if (!a || !b || !a.start_time || !b.start_time) return 0;
         return compareDesc(safeDate(a.start_time), safeDate(b.start_time));
       });
@@ -381,7 +380,7 @@ export const MeetingsModule: React.FC = () => {
             No meetings found matching your criteria.
           </div>
         ) : (
-          filteredMeetings.map((meeting: Meeting) => {
+          filteredMeetings.map((meeting) => {
             if (!meeting) return null;
             
             const timeInfo = formatMeetingTime(
@@ -602,7 +601,7 @@ export const MeetingsModule: React.FC = () => {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction 
-                                onClick={() => handleDeleteMeeting(meeting.id, meeting.title)} 
+                                onClick={() => handleDeleteMeeting(meeting.id, meeting.title || 'Untitled')} 
                                 disabled={isDeleting}
                               >
                                 Yes, Delete Everywhere
