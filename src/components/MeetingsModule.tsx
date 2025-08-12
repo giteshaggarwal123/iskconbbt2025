@@ -130,12 +130,12 @@ export const MeetingsModule: React.FC = () => {
     }
 
     // Remove duplicates and filter out invalid meetings
-    const validMeetings = meetings.filter(meeting => meeting && meeting.id);
+    const validMeetings = meetings.filter((meeting: Meeting) => meeting && meeting.id);
     
-    const uniqueMeetings = validMeetings.reduce((acc, meeting) => {
+    const uniqueMeetings = validMeetings.reduce((acc: Meeting[], meeting: Meeting) => {
       if (!meeting) return acc;
       
-      const isDuplicate = acc.some(existing => 
+      const isDuplicate = acc.some((existing: Meeting) => 
         existing && meeting.outlook_event_id && existing.outlook_event_id === meeting.outlook_event_id ||
         existing && meeting.teams_meeting_id && existing.teams_meeting_id === meeting.teams_meeting_id ||
         existing && existing.id === meeting.id
@@ -161,12 +161,12 @@ export const MeetingsModule: React.FC = () => {
 
     // Apply status filter
     if (statusFilter === 'upcoming') {
-      list = list.filter(meeting => {
+      list = list.filter((meeting: Meeting) => {
         if (!meeting || !meeting.start_time) return false;
         return safeDate(meeting.start_time) >= now;
       });
     } else if (statusFilter === 'past') {
-      list = list.filter(meeting => {
+      list = list.filter((meeting: Meeting) => {
         if (!meeting || !meeting.start_time) return false;
         return safeDate(meeting.start_time) < now;
       });
@@ -174,7 +174,7 @@ export const MeetingsModule: React.FC = () => {
 
     // Apply search filter
     if (searchTerm.trim()) {
-      list = list.filter(meeting => {
+      list = list.filter((meeting: Meeting) => {
         if (!meeting || !meeting.title) return false;
         return meeting.title.toLowerCase().includes(searchTerm.toLowerCase());
       });
@@ -182,12 +182,12 @@ export const MeetingsModule: React.FC = () => {
 
     // Sort meetings
     if (statusFilter === 'upcoming') {
-      return list.sort((a, b) => {
+      return list.sort((a: Meeting, b: Meeting) => {
         if (!a || !b || !a.start_time || !b.start_time) return 0;
         return compareAsc(safeDate(a.start_time), safeDate(b.start_time));
       });
     } else {
-      return list.sort((a, b) => {
+      return list.sort((a: Meeting, b: Meeting) => {
         if (!a || !b || !a.start_time || !b.start_time) return 0;
         return compareDesc(safeDate(a.start_time), safeDate(b.start_time));
       });
@@ -381,7 +381,7 @@ export const MeetingsModule: React.FC = () => {
             No meetings found matching your criteria.
           </div>
         ) : (
-          filteredMeetings.map(meeting => {
+          filteredMeetings.map((meeting: Meeting) => {
             if (!meeting) return null;
             
             const timeInfo = formatMeetingTime(
@@ -549,7 +549,7 @@ export const MeetingsModule: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleViewTranscript(meeting)}
+                          onClick={() => handleViewTranscript(meeting)} 
                           className="min-h-[40px]"
                         >
                           <FileText className="h-4 w-4 mr-2" /> Transcript
