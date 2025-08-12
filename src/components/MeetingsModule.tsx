@@ -114,12 +114,24 @@ export const MeetingsModule: React.FC = () => {
   // Filter and sort meetings properly by date and time
   const now = new Date();
   
+  // Safety check: ensure meetings data is available
+  if (!meetings || !Array.isArray(meetings)) {
+    console.log('Meetings data not ready yet, skipping processing');
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
   // Remove duplicates by outlook_event_id and teams_meeting_id to prevent duplicate display
-  const uniqueMeetings = meetings.reduce((acc, meeting) => {
+  const uniqueMeetings = (meetings || []).reduce((acc, meeting) => {
+    if (!meeting) return acc; // Skip undefined meetings
+    
     const isDuplicate = acc.some(existing => 
-      (meeting.outlook_event_id && existing.outlook_event_id === meeting.outlook_event_id) ||
-      (meeting.teams_meeting_id && existing.teams_meeting_id === meeting.teams_meeting_id) ||
-      existing.id === meeting.id
+      existing && meeting.outlook_event_id && existing.outlook_event_id === meeting.outlook_event_id ||
+      existing && meeting.teams_meeting_id && existing.teams_meeting_id === meeting.teams_meeting_id ||
+      existing && existing.id === meeting.id
     );
     
     if (!isDuplicate) {
@@ -147,27 +159,31 @@ export const MeetingsModule: React.FC = () => {
 
   // Unified, filtered meeting list
   const filteredMeetings = useMemo(() => {
+    if (!uniqueMeetings || !Array.isArray(uniqueMeetings)) {
+      return [];
+    }
+    
     let list = uniqueMeetings;
     if (statusFilter === 'upcoming') {
-      list = list.filter(meeting => safeDate(meeting.start_time) >= now);
+      list = list.filter(meeting => meeting && safeDate(meeting.start_time) >= now);
       if (searchTerm.trim()) {
-        list = list.filter(meeting => meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
+        list = list.filter(meeting => meeting && meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
       }
       // Upcoming: soonest first
-      return list.sort((a, b) => compareAsc(safeDate(a.start_time), safeDate(b.start_time)));
+      return list.sort((a, b) => a && b ? compareAsc(safeDate(a.start_time), safeDate(b.start_time)) : 0);
     } else if (statusFilter === 'past') {
-      list = list.filter(meeting => safeDate(meeting.start_time) < now);
+      list = list.filter(meeting => meeting && safeDate(meeting.start_time) < now);
       if (searchTerm.trim()) {
-        list = list.filter(meeting => meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
+        list = list.filter(meeting => meeting && meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
       }
       // Past: most recent first
-      return list.sort((a, b) => compareDesc(safeDate(a.start_time), safeDate(b.start_time)));
+      return list.sort((a, b) => a && b ? compareDesc(safeDate(a.start_time), safeDate(b.start_time)) : 0);
     } else {
       // All: most recent first
       if (searchTerm.trim()) {
-        list = list.filter(meeting => meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
+        list = list.filter(meeting => meeting && meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()));
       }
-      return list.sort((a, b) => compareDesc(safeDate(a.start_time), safeDate(b.start_time)));
+      return list.sort((a, b) => a && b ? compareDesc(safeDate(a.start_time), safeDate(b.start_time)) : 0);
     }
   }, [uniqueMeetings, statusFilter, searchTerm, now]);
 
