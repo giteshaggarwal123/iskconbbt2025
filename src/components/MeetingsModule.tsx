@@ -59,16 +59,7 @@ export const MeetingsModule: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
   
-  const { 
-    meetings, 
-    loading, 
-    deletingMeetings, 
-    createMeeting, 
-    deleteMeeting, 
-    fetchMeetings,
-    getDeletionProgress,
-    isDeletingMeeting
-  } = useMeetings();
+
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -81,6 +72,18 @@ export const MeetingsModule: React.FC = () => {
   const { userRole, isSuperAdmin, isAdmin, canDeleteMeetings, canScheduleMeetings } = useUserRole();
 
   const { profile } = useProfile();
+  
+  // Initialize meetings hook after auth is ready
+  const { 
+    meetings, 
+    loading, 
+    deletingMeetings, 
+    createMeeting, 
+    deleteMeeting, 
+    fetchMeetings,
+    getDeletionProgress,
+    isDeletingMeeting
+  } = useMeetings();
 
   // Auto-refresh meetings when sync completes - but prevent infinite loops
   useEffect(() => {
