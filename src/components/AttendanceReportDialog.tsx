@@ -9,10 +9,32 @@ import { FileText, Users, CheckCircle, XCircle, Clock, Download, Calendar } from
 import { useAttendance } from '@/hooks/useAttendance';
 import { format, parseISO } from 'date-fns';
 
+interface Meeting {
+  id: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+}
+
+interface AttendanceRecord {
+  id: string;
+  attendance_status: string;
+  attendance_type: string;
+  join_time: string | null;
+  leave_time: string | null;
+  duration_minutes: number;
+  notes: string;
+  profiles: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
+
 interface AttendanceReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  meeting: any;
+  meeting: Meeting | null;
 }
 
 export const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({ 
@@ -20,12 +42,12 @@ export const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
   onOpenChange, 
   meeting 
 }) => {
-  const [attendanceData, setAttendanceData] = useState<any[]>([]);
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const { fetchAttendanceForMeeting } = useAttendance();
 
   // Sample data for demonstration
-  const sampleAttendanceData = [
+  const sampleAttendanceData: AttendanceRecord[] = [
     {
       id: 'sample-1',
       attendance_status: 'present',

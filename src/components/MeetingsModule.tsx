@@ -120,7 +120,7 @@ export const MeetingsModule: React.FC = () => {
   }, [expandedMeetingId, isDeletingMeeting]);
 
   // Data processing
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   
   // Safe meetings processing with null checks
   const processedMeetings = useMemo(() => {
@@ -218,7 +218,7 @@ export const MeetingsModule: React.FC = () => {
     setShowRSVPDialog(true);
   };
 
-  const handleDeleteMeeting = async (meetingId: string, meetingTitle: string) => {
+  const handleDeleteMeeting = async (meetingId: string, _meetingTitle: string) => {
     if (!canDeleteMeetings) {
       toast({
         title: "Access Denied",
