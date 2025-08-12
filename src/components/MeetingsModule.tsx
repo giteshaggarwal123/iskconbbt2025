@@ -20,6 +20,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { SearchInput } from '@/components/ui/input';
 import { useProfile } from '@/hooks/useProfile';
 import { useLocation } from 'react-router-dom';
+import { useAutoTranscript } from '@/hooks/useAutoTranscript';
 
 // Define meeting type interface
 interface Meeting {
